@@ -35,6 +35,9 @@
         <cv-button :icon="downloadIcon" :disabled="true">
           Download CBOM
         </cv-button>
+        <cv-button kind="secondary" :icon="Document24" :disabled="true" style="margin-left: 8px;">
+          Download PDF
+        </cv-button>
       </template></cv-data-table-skeleton
     >
 
@@ -88,6 +91,15 @@
           :icon="downloadIcon"
         >
           Download CBOM
+        </cv-button>
+        <cv-button
+          kind="secondary"
+          @click="downloadPDF"
+          :disabled="model.scanning.isScanning || isGeneratingPdf"
+          :icon="Document24"
+          style="margin-left: 8px;"
+        >
+          {{ isGeneratingPdf ? 'Generating...' : 'Download PDF' }}
         </cv-button>
       </template>
       <template slot="data">
@@ -230,12 +242,14 @@ import {
   getComplianceDescription,
   resolvePath,
   getComponentQuantumAssessment,
-  NOT_ANALYSED_TEXT
+  NOT_ANALYSED_TEXT,
+  generatePdfReport
 } from "@/helpers";
 import {
   Maximize24,
   SettingsAdjust24,
   WatsonHealthImageAvailabilityUnavailable24,
+  Document24,
 } from "@carbon/icons-vue";
 import CryptoAssetDetails from "@/components/results/modal/CryptoAssetDetails.vue";
 import GitInfoPrompt from "@/components/results/modal/GitInfoPrompt.vue";
@@ -256,6 +270,7 @@ export default {
       model,
       localFinalListOfAssets: [],
       Maximize24,
+      Document24,
       currentAssetModal: null,
       currentPagination: null,
       openInCodeOnConfirm: false, // If true, the user has clicked on the button to get the prompt. If false, the prompt was shown after the user tried to openInCode.
@@ -266,6 +281,7 @@ export default {
         <path d="M13 15v-2h1v2a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1v-2h1v2h12z"></path>
         </svg>'`,
       SettingsAdjust24,
+      isGeneratingPdf: false,
     };
   },
   computed: {
@@ -419,6 +435,18 @@ export default {
       document.body.appendChild(element);
       element.click();
       document.body.removeChild(element);
+    },
+    async downloadPDF() {
+      this.isGeneratingPdf = true;
+      try {
+        await generatePdfReport((status) => {
+          console.log('PDF generation status:', status);
+        });
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+      } finally {
+        this.isGeneratingPdf = false;
+      }
     },
     showDetectionDetailsFor: function (value) {
       this.currentAssetModal = this.paginatedDetections[value.index];
