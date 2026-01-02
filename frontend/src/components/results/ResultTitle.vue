@@ -16,6 +16,7 @@
       <div v-if="getDetections().length > 0 || model.scanning.isScanning">
         <RegulatorResults style="padding-top: 12px" />
         <StatisticsView style="padding: 22px 16px" />
+        <QuantumSecurityView style="padding: 0 16px 16px" />
       </div>
     </cv-tile>
   </div>
@@ -26,6 +27,7 @@ import { model } from "@/model.js";
 import { getDetections, numberFormatter, formatSeconds, limitString } from "@/helpers";
 import RegulatorResults from "@/components/results/RegulatorResults.vue";
 import StatisticsView from "@/components/results/StatisticsView.vue";
+import QuantumSecurityView from "@/components/results/QuantumSecurityView.vue";
 
 export default {
   name: "ResultsTitle",
@@ -37,6 +39,7 @@ export default {
   components: {
     RegulatorResults,
     StatisticsView,
+    QuantumSecurityView,
   },
   computed: {
     showLink() {

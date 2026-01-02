@@ -114,6 +114,10 @@ The compliance framework is designed with extensibility in mind, providing a sol
  - Enhancing existing verification processes 
  - Integrating custom compliance checks (external)
 
+### Quantum security metadata
+
+CBOMs now support an optional top-level `quantumSecurity` block that records six quantum security vectors, an overall Quantum Transition Readiness Level (QTRL), and a dual-risk view (severity + urgency). When no quantum analysis is available, all fields must be set to `Not analysed` to preserve backward compatibility; generators in this repo emit that placeholder by default.
+
 #### Configuration
 
 Different deployment configurations utilize distinct sources for compliance verification.

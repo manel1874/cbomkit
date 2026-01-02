@@ -80,6 +80,70 @@
       
     </div>
 
+    <!-- QUANTUM ASSESSMENT -->
+    <div>
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          padding-top: 16px;
+          padding-bottom: 6px;
+        "
+      >
+        <h4 style="font-weight: 500">Quantum Assessment</h4>
+      </div>
+      <div class="list">
+        <cv-structured-list condensed="true">
+          <template slot="headings">
+            <cv-structured-list-heading style="width: 30%">Property</cv-structured-list-heading>
+            <cv-structured-list-heading>Value</cv-structured-list-heading>
+          </template>
+          <template slot="items">
+            <cv-structured-list-item>
+              <cv-structured-list-data>Security Vector</cv-structured-list-data>
+              <cv-structured-list-data>
+                <cv-tag
+                  v-if="quantumAssessment.vector !== NOT_ANALYSED_TEXT"
+                  :label="quantumAssessment.vectorName"
+                  kind="blue"
+                />
+                <em v-else style="color: var(--cds-text-secondary);">{{ NOT_ANALYSED_TEXT }}</em>
+              </cv-structured-list-data>
+            </cv-structured-list-item>
+            <cv-structured-list-item>
+              <cv-structured-list-data>Severity</cv-structured-list-data>
+              <cv-structured-list-data>
+                <cv-tag
+                  v-if="quantumAssessment.severity !== NOT_ANALYSED_TEXT"
+                  :label="quantumAssessment.severity"
+                  :kind="getSeverityTagKind(quantumAssessment.severity)"
+                />
+                <em v-else style="color: var(--cds-text-secondary);">{{ NOT_ANALYSED_TEXT }}</em>
+              </cv-structured-list-data>
+            </cv-structured-list-item>
+            <cv-structured-list-item>
+              <cv-structured-list-data>Urgency</cv-structured-list-data>
+              <cv-structured-list-data>
+                <cv-tag
+                  v-if="quantumAssessment.urgency !== NOT_ANALYSED_TEXT"
+                  :label="quantumAssessment.urgency"
+                  :kind="getUrgencyTagKind(quantumAssessment.urgency)"
+                />
+                <em v-else style="color: var(--cds-text-secondary);">{{ NOT_ANALYSED_TEXT }}</em>
+              </cv-structured-list-data>
+            </cv-structured-list-item>
+            <cv-structured-list-item>
+              <cv-structured-list-data>Notes</cv-structured-list-data>
+              <cv-structured-list-data>
+                <span v-if="quantumAssessment.notes !== NOT_ANALYSED_TEXT">{{ quantumAssessment.notes }}</span>
+                <em v-else style="color: var(--cds-text-secondary);">{{ NOT_ANALYSED_TEXT }}</em>
+              </cv-structured-list-data>
+            </cv-structured-list-item>
+          </template>
+        </cv-structured-list>
+      </div>
+    </div>
+
     <!-- DEPENDENCIES -->
      <div v-if="getBomRef">
       <DependenciesView :bomRef="getBomRef" @open-asset="openAsset"/>
@@ -139,7 +203,9 @@ import {
   getCompliancePolicyName,
   getComplianceLabel,
   getComplianceObjectFromId,
-  resolvePath
+  resolvePath,
+  getComponentQuantumAssessment,
+  NOT_ANALYSED_TEXT
 } from "@/helpers";
 import {
   Launch16,
@@ -226,6 +292,12 @@ export default {
         return values[0];
       }
       return null;
+    },
+    quantumAssessment() {
+      return getComponentQuantumAssessment(this.asset);
+    },
+    NOT_ANALYSED_TEXT() {
+      return NOT_ANALYSED_TEXT;
     }
   },
   methods: {
@@ -238,6 +310,26 @@ export default {
     getComplianceLabel,
     getComplianceObjectFromId,
     resolvePath,
+    getSeverityTagKind(severity) {
+      const kindMap = {
+        critical: "purple",
+        high: "magenta",
+        medium: "cyan",
+        low: "green",
+        informational: "gray",
+      };
+      return kindMap[severity?.toLowerCase()] || "gray";
+    },
+    getUrgencyTagKind(urgency) {
+      const kindMap = {
+        critical: "purple",
+        high: "magenta",
+        medium: "cyan",
+        low: "green",
+        informational: "gray",
+      };
+      return kindMap[urgency?.toLowerCase()] || "gray";
+    },
     hasCodeLocation() {
       let occurences = this.getPropertyValues("evidence.occurrences")
       return occurences !== null && occurences !== undefined

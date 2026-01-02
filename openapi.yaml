@@ -159,7 +159,7 @@ components:
 info:
   title: CBOMkit API
   version: 2.0.0-SNAPSHOT
-  description: Service for generating and retrieving CBOMs
+  description: Service for generating and retrieving CBOMs. Responses may include an optional `quantumSecurity` block; when no quantum analysis is performed, new fields are populated with `Not analysed` by default for backward compatibility.
 servers:
 - url: http://localhost:8081
   description: Auto generated value

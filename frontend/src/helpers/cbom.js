@@ -1,5 +1,15 @@
 import {ErrorStatus, model} from "@/model.js";
 
+export const NOT_ANALYSED_TEXT = "Not analysed";
+const QUANTUM_VECTOR_DEFINITIONS = [
+  { id: "hndl", name: "HNDL", fullName: "Harvest-now-decrypt-later threat", description: "Analyses storage exposure in data at rest, traffic analysis exposure, and long-term data retention policies." },
+  { id: "authentication", name: "Authentication", fullName: "Authentication threat", description: "Analyses digital signatures, certificate management, and multi-factor authentication." },
+  { id: "kml", name: "KML", fullName: "Key management and lifecycle", description: "Analyses quantum robustness of key storage, rotation, destruction, and escrow policies." },
+  { id: "thirdParty", name: "Third Party", fullName: "Dependency on third parties", description: "Analyses vendor quantum readiness, library dependencies, API security, and supply chain risks." },
+  { id: "cryptoAgility", name: "Crypto Agility", fullName: "Cryptographic agility", description: "Analyses cryptographic abstraction layers, protocol flexibility, update mechanisms, and hybrid algorithms." },
+  { id: "governance", name: "Compliance", fullName: "Governance and compliance", description: "Analyses compliance with NIST, CNSA 2.0, ETSI, ISO/IEC standards and breach detection processes." },
+];
+
 // This function partially checks the CBOM properties that are necessary for the frontend, but does not formally verifies the validity of the CBOM format
 function checkCbomValidity(cbom) {
   var isValid = true;
@@ -374,4 +384,179 @@ export function getDetectionsFromCbom(cbom) {
     model.addError(ErrorStatus.JsonParsing);
     return []; // An error occurred while parsing the JSON string.
   }
+}
+
+export function getQuantumSecurity(cbom = model.cbom) {
+  return getQuantumSecurityFromCbom(cbom);
+}
+
+export function getQuantumSecurityFromCbom(cbom) {
+  if (!cbom || typeof cbom !== "object") {
+    return defaultQuantumSecurity();
+  }
+
+  const quantum = cbom.quantumSecurity;
+  if (!quantum || typeof quantum !== "object") {
+    return defaultQuantumSecurity();
+  }
+
+  const base = defaultQuantumSecurity();
+  const normalizedQtrl = normalizeQtrl(quantum.qtrl, base.qtrl);
+  const normalizedVectors = normalizeVectors(quantum.vectors, base.vectors);
+  const normalizedRiskModel = normalizeRiskModel(quantum.riskModel, base.riskModel);
+
+  return {
+    qtrl: normalizedQtrl,
+    vectors: normalizedVectors,
+    riskModel: normalizedRiskModel,
+  };
+}
+
+function defaultQuantumSecurity() {
+  return {
+    qtrl: {
+      level: NOT_ANALYSED_TEXT,
+      name: NOT_ANALYSED_TEXT,
+      conditions: NOT_ANALYSED_TEXT,
+    },
+    vectors: QUANTUM_VECTOR_DEFINITIONS.map((def) => ({
+      ...def,
+      status: NOT_ANALYSED_TEXT,
+      severity: NOT_ANALYSED_TEXT,
+      urgency: NOT_ANALYSED_TEXT,
+      notes: NOT_ANALYSED_TEXT,
+    })),
+    riskModel: {
+      severityLevels: ["critical", "high", "medium", "low", "informational"],
+      urgencyLevels: ["critical", "high", "medium", "low", "informational"],
+      notes: NOT_ANALYSED_TEXT,
+    },
+  };
+}
+
+function normalizeQtrl(candidate, fallback) {
+  if (!candidate || typeof candidate !== "object") {
+    return fallback;
+  }
+  return {
+    level: candidate.level ?? fallback.level,
+    name: candidate.name ?? fallback.name,
+    conditions: candidate.conditions ?? fallback.conditions,
+  };
+}
+
+function normalizeVectors(candidateVectors, fallbackVectors) {
+  const merged = new Map(fallbackVectors.map((vector) => [vector.id, { ...vector }]));
+
+  if (Array.isArray(candidateVectors)) {
+    candidateVectors.forEach((vector) => {
+      if (!vector || typeof vector !== "object") {
+        return;
+      }
+      const id = vector.id ?? vector.name ?? `vector-${merged.size + 1}`;
+      const base = merged.get(id) ?? {
+        id: id,
+        name: vector.name ?? id,
+        status: NOT_ANALYSED_TEXT,
+        severity: NOT_ANALYSED_TEXT,
+        urgency: NOT_ANALYSED_TEXT,
+        notes: NOT_ANALYSED_TEXT,
+      };
+      merged.set(id, {
+        ...base,
+        name: vector.name ?? base.name,
+        status: vector.status ?? base.status,
+        severity: vector.severity ?? base.severity,
+        urgency: vector.urgency ?? base.urgency,
+        notes: vector.notes ?? base.notes,
+      });
+    });
+  }
+
+  return Array.from(merged.values());
+}
+
+function normalizeRiskModel(candidate, fallback) {
+  if (!candidate || typeof candidate !== "object") {
+    return fallback;
+  }
+  return {
+    severityLevels: Array.isArray(candidate.severityLevels)
+      ? candidate.severityLevels
+      : fallback.severityLevels,
+    urgencyLevels: Array.isArray(candidate.urgencyLevels)
+      ? candidate.urgencyLevels
+      : fallback.urgencyLevels,
+    notes: candidate.notes ?? fallback.notes,
+  };
+}
+
+/**
+ * Returns the quantum assessment for a single crypto component.
+ * Extracts from cryptoProperties.quantumAssessment with fallback defaults.
+ * @param {Object} asset - A cryptographic asset component
+ * @returns {Object} { vector, severity, urgency, notes, vectorName }
+ */
+export function getComponentQuantumAssessment(asset) {
+  const defaultAssessment = {
+    vector: NOT_ANALYSED_TEXT,
+    severity: NOT_ANALYSED_TEXT,
+    urgency: NOT_ANALYSED_TEXT,
+    notes: NOT_ANALYSED_TEXT,
+    vectorName: NOT_ANALYSED_TEXT,
+  };
+
+  if (!asset || typeof asset !== "object") {
+    return defaultAssessment;
+  }
+
+  const cryptoProps = asset.cryptoProperties;
+  if (!cryptoProps || typeof cryptoProps !== "object") {
+    return defaultAssessment;
+  }
+
+  const qa = cryptoProps.quantumAssessment;
+  if (!qa || typeof qa !== "object") {
+    return defaultAssessment;
+  }
+
+  const vectorId = qa.vector ?? NOT_ANALYSED_TEXT;
+  const vectorDef = QUANTUM_VECTOR_DEFINITIONS.find((v) => v.id === vectorId);
+  const vectorName = vectorDef ? vectorDef.name : vectorId;
+
+  return {
+    vector: vectorId,
+    severity: qa.severity ?? NOT_ANALYSED_TEXT,
+    urgency: qa.urgency ?? NOT_ANALYSED_TEXT,
+    notes: qa.notes ?? NOT_ANALYSED_TEXT,
+    vectorName: vectorName,
+  };
+}
+
+/**
+ * Returns the vector definitions for display purposes.
+ * @returns {Array} Array of { id, name, fullName, description } objects
+ */
+export function getQuantumVectorDefinitions() {
+  return QUANTUM_VECTOR_DEFINITIONS;
+}
+
+/**
+ * Returns the description for a specific vector by ID.
+ * @param {string} id - The vector ID (e.g., "hndl", "authentication")
+ * @returns {string} The vector description or empty string if not found
+ */
+export function getVectorDescription(id) {
+  const vector = QUANTUM_VECTOR_DEFINITIONS.find(v => v.id === id);
+  return vector ? vector.description : "";
+}
+
+/**
+ * Returns the full name for a specific vector by ID.
+ * @param {string} id - The vector ID
+ * @returns {string} The vector full name or empty string if not found
+ */
+export function getVectorFullName(id) {
+  const vector = QUANTUM_VECTOR_DEFINITIONS.find(v => v.id === id);
+  return vector ? vector.fullName : "";
 }

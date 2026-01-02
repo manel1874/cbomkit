@@ -39,6 +39,80 @@
       }
     ]
   },
+  "quantumSecurity": {
+    "qtrl": {
+      "level": "Not analysed",
+      "name": "Not analysed",
+      "conditions": "Not analysed"
+    },
+    "vectors": [
+      {
+        "id": "hndl",
+        "name": "Harvest-now-decrypt-later threat",
+        "status": "Not analysed",
+        "severity": "Not analysed",
+        "urgency": "Not analysed",
+        "notes": "Not analysed"
+      },
+      {
+        "id": "authentication",
+        "name": "Authentication threat",
+        "status": "Not analysed",
+        "severity": "Not analysed",
+        "urgency": "Not analysed",
+        "notes": "Not analysed"
+      },
+      {
+        "id": "kml",
+        "name": "Key management and lifecycle",
+        "status": "Not analysed",
+        "severity": "Not analysed",
+        "urgency": "Not analysed",
+        "notes": "Not analysed"
+      },
+      {
+        "id": "thirdParty",
+        "name": "Dependency on third parties",
+        "status": "Not analysed",
+        "severity": "Not analysed",
+        "urgency": "Not analysed",
+        "notes": "Not analysed"
+      },
+      {
+        "id": "cryptoAgility",
+        "name": "Cryptographic agility",
+        "status": "Not analysed",
+        "severity": "Not analysed",
+        "urgency": "Not analysed",
+        "notes": "Not analysed"
+      },
+      {
+        "id": "governance",
+        "name": "Governance and compliance",
+        "status": "Not analysed",
+        "severity": "Not analysed",
+        "urgency": "Not analysed",
+        "notes": "Not analysed"
+      }
+    ],
+    "riskModel": {
+      "severityLevels": [
+        "critical",
+        "high",
+        "medium",
+        "low",
+        "informational"
+      ],
+      "urgencyLevels": [
+        "critical",
+        "high",
+        "medium",
+        "low",
+        "informational"
+      ],
+      "notes": "Not analysed"
+    }
+  },
   "components": [
     {
       "type": "cryptographic-asset",
@@ -58,6 +132,12 @@
         "assetType": "related-crypto-material",
         "relatedCryptoMaterialProperties": {
           "type": "secret-key"
+        },
+        "quantumAssessment": {
+          "vector": "Not analysed",
+          "severity": "Not analysed",
+          "urgency": "Not analysed",
+          "notes": "Not analysed"
         }
       }
     },
@@ -85,6 +165,12 @@
         "assetType": "algorithm",
         "algorithmProperties": {
           "primitive": "key-agree"
+        },
+        "quantumAssessment": {
+          "vector": "Not analysed",
+          "severity": "Not analysed",
+          "urgency": "Not analysed",
+          "notes": "Not analysed"
         },
         "oid": "1.3.132.1.12"
       }
@@ -123,6 +209,12 @@
           "cryptoFunctions": [
             "digest"
           ]
+        },
+        "quantumAssessment": {
+          "vector": "Not analysed",
+          "severity": "Not analysed",
+          "urgency": "Not analysed",
+          "notes": "Not analysed"
         }
       }
     },

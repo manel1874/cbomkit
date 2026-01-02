@@ -146,7 +146,37 @@
               </div> 
             </div>
           </cv-data-table-cell>
-          <cv-data-table-cell style="max-width: 200px; width: 30%">
+          <cv-data-table-cell>
+            <div style="padding: 6px; min-width: 100px">
+              <cv-tag
+                v-if="getComponentQuantumAssessment(asset).vector !== NOT_ANALYSED_TEXT"
+                :label="getVectorShortName(getComponentQuantumAssessment(asset).vector)"
+                kind="blue"
+              />
+              <em v-else style="color: var(--cds-text-secondary);">{{ NOT_ANALYSED_TEXT }}</em>
+            </div>
+          </cv-data-table-cell>
+          <cv-data-table-cell>
+            <div style="padding: 6px; min-width: 80px">
+              <cv-tag
+                v-if="getComponentQuantumAssessment(asset).severity !== NOT_ANALYSED_TEXT"
+                :label="getComponentQuantumAssessment(asset).severity"
+                :kind="getSeverityTagKind(getComponentQuantumAssessment(asset).severity)"
+              />
+              <em v-else style="color: var(--cds-text-secondary);">{{ NOT_ANALYSED_TEXT }}</em>
+            </div>
+          </cv-data-table-cell>
+          <cv-data-table-cell>
+            <div style="padding: 6px; min-width: 80px">
+              <cv-tag
+                v-if="getComponentQuantumAssessment(asset).urgency !== NOT_ANALYSED_TEXT"
+                :label="getComponentQuantumAssessment(asset).urgency"
+                :kind="getUrgencyTagKind(getComponentQuantumAssessment(asset).urgency)"
+              />
+              <em v-else style="color: var(--cds-text-secondary);">{{ NOT_ANALYSED_TEXT }}</em>
+            </div>
+          </cv-data-table-cell>
+          <cv-data-table-cell style="max-width: 200px; width: 20%">
             <div v-if="occurrences(asset) == null" >
               <em>No code location found</em>
             </div>
@@ -198,7 +228,9 @@ import {
   isViewerOnly,
   isLoadingCompliance,
   getComplianceDescription,
-  resolvePath
+  resolvePath,
+  getComponentQuantumAssessment,
+  NOT_ANALYSED_TEXT
 } from "@/helpers";
 import {
   Maximize24,
@@ -227,7 +259,7 @@ export default {
       currentAssetModal: null,
       currentPagination: null,
       openInCodeOnConfirm: false, // If true, the user has clicked on the button to get the prompt. If false, the prompt was shown after the user tried to openInCode.
-      columns: ["Cryptographic asset", "Type", "Primitive", "Location"],
+      columns: ["Cryptographic asset", "Type", "Primitive", "Vector", "Severity", "Urgency", "Location"],
       downloadIcon: `<svg fill-rule="evenodd" height="16" name="download" role="img" viewBox="0 0 14 16" width="14" aria-label="Download" alt="Download">
         <title>Download</title>
         <path d="M7.506 11.03l4.137-4.376.727.687-5.363 5.672-5.367-5.67.726-.687 4.14 4.374V0h1v11.03z"></path>
@@ -337,6 +369,39 @@ export default {
     getTermFullName,
     capitalizeFirstLetter,
     resolvePath,
+    getComponentQuantumAssessment,
+    NOT_ANALYSED_TEXT,
+    getSeverityTagKind(severity) {
+      const kindMap = {
+        critical: "purple",
+        high: "magenta",
+        medium: "cyan",
+        low: "green",
+        informational: "gray",
+      };
+      return kindMap[severity?.toLowerCase()] || "gray";
+    },
+    getUrgencyTagKind(urgency) {
+      const kindMap = {
+        critical: "purple",
+        high: "magenta",
+        medium: "cyan",
+        low: "green",
+        informational: "gray",
+      };
+      return kindMap[urgency?.toLowerCase()] || "gray";
+    },
+    getVectorShortName(vectorId) {
+      const shortNames = {
+        hndl: "HNDL",
+        authentication: "Auth",
+        kml: "KML",
+        thirdParty: "3rd Party",
+        cryptoAgility: "Agility",
+        governance: "Compliance",
+      };
+      return shortNames[vectorId] || vectorId;
+    },
     actionOnPagination: function (content) {
       // console.log(content)
       this.currentPagination = content;
@@ -414,10 +479,26 @@ export default {
               itemB = getTermFullName(this.type(b)) ? getTermFullName(this.type(b)) : this.type(b)
               break;
             case "2":
-            itemA = getTermFullName(this.primitive(a)) ? getTermFullName(this.primitive(a)) : this.primitive(a)
-            itemB = getTermFullName(this.primitive(b)) ? getTermFullName(this.primitive(b)) : this.primitive(b)
+              itemA = getTermFullName(this.primitive(a)) ? getTermFullName(this.primitive(a)) : this.primitive(a)
+              itemB = getTermFullName(this.primitive(b)) ? getTermFullName(this.primitive(b)) : this.primitive(b)
               break;
             case "3":
+              // Vector column
+              itemA = getComponentQuantumAssessment(a).vector || "";
+              itemB = getComponentQuantumAssessment(b).vector || "";
+              break;
+            case "4":
+              // Severity column
+              itemA = getComponentQuantumAssessment(a).severity || "";
+              itemB = getComponentQuantumAssessment(b).severity || "";
+              break;
+            case "5":
+              // Urgency column
+              itemA = getComponentQuantumAssessment(a).urgency || "";
+              itemB = getComponentQuantumAssessment(b).urgency || "";
+              break;
+            case "6":
+              // Location column
               itemA = this.fileName(this.occurrences(a));
               itemB = this.fileName(this.occurrences(b));
               break;

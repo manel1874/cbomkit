@@ -22,9 +22,11 @@ package com.ibm.usecases.database.commands;
 import app.bootstrap.core.cqrs.ICommand;
 import app.bootstrap.core.cqrs.ICommandBus;
 import app.bootstrap.core.cqrs.ICommandHandler;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ibm.infrastructure.database.readmodels.CBOMReadModel;
 import com.ibm.infrastructure.database.readmodels.CBOMReadRepository;
+import com.ibm.domain.scanning.QuantumSecurityDefaults;
 import io.quarkus.runtime.StartupEvent;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -90,6 +92,9 @@ public class StoreCBOMCommandHandler implements ICommandHandler {
                     }
                 }
             }
+            final ObjectMapper mapper = new ObjectMapper();
+            final JsonNode bomNode =
+                    QuantumSecurityDefaults.ensurePresent(mapper.readTree(cbomJson));
             final CBOMReadModel model =
                     new CBOMReadModel(
                             cbomUUID,
@@ -99,7 +104,7 @@ public class StoreCBOMCommandHandler implements ICommandHandler {
                             packageFolder,
                             commit,
                             Timestamp.from(Instant.now()),
-                            (new ObjectMapper()).readTree(cbomJson));
+                            bomNode);
             readRepository.save(model);
         }
     }

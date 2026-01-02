@@ -24,8 +24,10 @@ import app.bootstrap.core.ddd.IDomainEvent;
 import app.bootstrap.core.ddd.IDomainEventBus;
 import app.bootstrap.core.ddd.IRepository;
 import com.ibm.domain.scanning.Commit;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.ibm.domain.scanning.GitUrl;
 import com.ibm.domain.scanning.LanguageScan;
+import com.ibm.domain.scanning.QuantumSecurityDefaults;
 import com.ibm.domain.scanning.ScanAggregate;
 import com.ibm.domain.scanning.ScanId;
 import com.ibm.domain.scanning.errors.NoValidProjectIdentifierForScan;
@@ -110,6 +112,8 @@ public class CBOMProjector extends Projector<UUID, CBOMReadModel> {
             throw new NoCBOMForScan();
         }
         // create read model
+        final JsonNode bomWithQuantum = QuantumSecurityDefaults.ensurePresent(mergedCBOM.toJSON());
+
         final CBOMReadModel cbomReadModel =
                 new CBOMReadModel(
                         scanAggregate.getId().getUuid(),
@@ -122,7 +126,7 @@ public class CBOMProjector extends Projector<UUID, CBOMReadModel> {
                         scanAggregate.getPackageFolder().map(Path::toString).orElse(null),
                         scanAggregate.getCommit().map(Commit::hash).orElse(null),
                         scanFinishedEvent.getTimestamp(),
-                        mergedCBOM.toJSON());
+                        bomWithQuantum);
         // save read model
         this.repository.save(cbomReadModel);
         LOGGER.info("Stored CBOM for {}", projectIdentifier);
